@@ -6,19 +6,31 @@ import { UpsertProfileBody, SubmitOnboardingBody } from "@workspace/api-zod";
 
 const router = Router();
 
-// GET /api/users/me
+async function getOrCreateUser(clerkId: string) {
+  const existing = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId)).limit(1);
+  if (existing.length > 0) return existing[0];
+
+  const inserted = await db
+    .insert(usersTable)
+    .values({
+      clerkId,
+      name: "EcoQuest User",
+      email: "",
+      greenPoints: 0,
+      streak: 0,
+      badges: [],
+      onboardingComplete: false,
+      carbonScore: 0,
+    })
+    .returning();
+  return inserted[0];
+}
+
+// GET /api/users/me — auto-provisions user on first login
 router.get("/me", requireAuth, async (req, res) => {
   const clerkId = (req as any).clerkId as string;
-  const users = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId)).limit(1);
-  if (!users.length) {
-    res.status(404).json({ error: "User not found" });
-    return;
-  }
-  const user = users[0];
-  res.json({
-    ...user,
-    createdAt: user.createdAt.toISOString(),
-  });
+  const user = await getOrCreateUser(clerkId);
+  res.json({ ...user, createdAt: user.createdAt.toISOString() });
 });
 
 // PUT /api/users/me
@@ -30,22 +42,7 @@ router.put("/me", requireAuth, async (req, res) => {
     return;
   }
 
-  const existing = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId)).limit(1);
-
-  if (existing.length === 0) {
-    const inserted = await db
-      .insert(usersTable)
-      .values({
-        clerkId,
-        name: parsed.data.name ?? "EcoQuest User",
-        email: "",
-        ...parsed.data,
-      })
-      .returning();
-    const user = inserted[0];
-    res.json({ ...user, createdAt: user.createdAt.toISOString() });
-    return;
-  }
+  await getOrCreateUser(clerkId);
 
   const updated = await db
     .update(usersTable)
@@ -67,7 +64,6 @@ router.post("/me/onboarding", requireAuth, async (req, res) => {
 
   const data = parsed.data;
 
-  // Calculate initial carbon score
   const transportEmissions: Record<string, number> = {
     walking: 0,
     bicycle: 0.02,
@@ -85,40 +81,22 @@ router.post("/me/onboarding", requireAuth, async (req, res) => {
   const totalKgPerDay = transportKgPerDay + electricityKgPerDay + foodKgPerDay + shoppingKgPerDay + airTravelKgPerDay;
   const annualTons = (totalKgPerDay * 365) / 1000;
 
-  const existing = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId)).limit(1);
+  const existing = await getOrCreateUser(clerkId);
 
-  let user;
-  if (existing.length === 0) {
-    const inserted = await db
-      .insert(usersTable)
-      .values({
-        clerkId,
-        name: "EcoQuest User",
-        email: "",
-        ...data,
-        carbonScore: annualTons,
-        onboardingComplete: true,
-        badges: ["Eco Beginner"],
-        greenPoints: 50,
-      })
-      .returning();
-    user = inserted[0];
-  } else {
-    const updated = await db
-      .update(usersTable)
-      .set({
-        ...data,
-        carbonScore: annualTons,
-        onboardingComplete: true,
-        badges: existing[0].badges.includes("Eco Beginner") ? existing[0].badges : [...existing[0].badges, "Eco Beginner"],
-        greenPoints: existing[0].greenPoints + 50,
-        updatedAt: new Date(),
-      })
-      .where(eq(usersTable.clerkId, clerkId))
-      .returning();
-    user = updated[0];
-  }
+  const updated = await db
+    .update(usersTable)
+    .set({
+      ...data,
+      carbonScore: annualTons,
+      onboardingComplete: true,
+      badges: existing.badges.includes("Eco Beginner") ? existing.badges : [...existing.badges, "Eco Beginner"],
+      greenPoints: existing.greenPoints + 50,
+      updatedAt: new Date(),
+    })
+    .where(eq(usersTable.clerkId, clerkId))
+    .returning();
 
+  const user = updated[0];
   res.json({ ...user, createdAt: user.createdAt.toISOString() });
 });
 

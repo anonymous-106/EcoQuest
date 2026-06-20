@@ -1,21 +1,34 @@
 import { Router } from "express";
 import { db, usersTable, activitiesTable, userChallengesTable } from "@workspace/db";
-import { eq, and, gte, desc } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { requireAuth } from "../middlewares/requireAuth";
 
 const router = Router();
 
+async function getOrCreateUser(clerkId: string) {
+  const existing = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId)).limit(1);
+  if (existing.length > 0) return existing[0];
+
+  const inserted = await db
+    .insert(usersTable)
+    .values({
+      clerkId,
+      name: "EcoQuest User",
+      email: "",
+      greenPoints: 0,
+      streak: 0,
+      badges: [],
+      onboardingComplete: false,
+      carbonScore: 0,
+    })
+    .returning();
+  return inserted[0];
+}
+
 // GET /api/dashboard/summary
 router.get("/summary", requireAuth, async (req, res) => {
   const clerkId = (req as any).clerkId as string;
-
-  const users = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId)).limit(1);
-  if (!users.length) {
-    res.status(404).json({ error: "User not found" });
-    return;
-  }
-
-  const user = users[0];
+  const user = await getOrCreateUser(clerkId);
   const userId = user.id;
 
   // Recent activities (last 10)
@@ -45,7 +58,7 @@ router.get("/summary", requireAuth, async (req, res) => {
     weeklyEmissions.push({ day: days[d.getDay()], kg: Math.round(kg * 100) / 100 });
   }
 
-  // Monthly emissions (last 6 months from activities)
+  // All activities for monthly breakdown
   const allActivities = await db
     .select()
     .from(activitiesTable)
@@ -85,9 +98,9 @@ router.get("/summary", requireAuth, async (req, res) => {
   }));
 
   res.json({
-    carbonScore: user.carbonScore,
-    greenPoints: user.greenPoints,
-    streak: user.streak,
+    carbonScore: user.carbonScore ?? 0,
+    greenPoints: user.greenPoints ?? 0,
+    streak: user.streak ?? 0,
     badges: user.badges ?? [],
     weeklyEmissions,
     monthlyEmissions,

@@ -6,6 +6,26 @@ import { LogActivityBody, CalculateFootprintBody, GetActivitiesQueryParams } fro
 
 const router = Router();
 
+async function getOrCreateUser(clerkId: string) {
+  const existing = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId)).limit(1);
+  if (existing.length > 0) return existing[0];
+
+  const inserted = await db
+    .insert(usersTable)
+    .values({
+      clerkId,
+      name: "EcoQuest User",
+      email: "",
+      greenPoints: 0,
+      streak: 0,
+      badges: [],
+      onboardingComplete: false,
+      carbonScore: 0,
+    })
+    .returning();
+  return inserted[0];
+}
+
 // GET /api/activities
 router.get("/", requireAuth, async (req, res) => {
   const clerkId = (req as any).clerkId as string;
@@ -13,16 +33,12 @@ router.get("/", requireAuth, async (req, res) => {
   const limit = parsed.success ? (parsed.data.limit ?? 20) : 20;
   const offset = parsed.success ? (parsed.data.offset ?? 0) : 0;
 
-  const users = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId)).limit(1);
-  if (!users.length) {
-    res.json([]);
-    return;
-  }
+  const user = await getOrCreateUser(clerkId);
 
   const activities = await db
     .select()
     .from(activitiesTable)
-    .where(eq(activitiesTable.userId, users[0].id))
+    .where(eq(activitiesTable.userId, user.id))
     .orderBy(desc(activitiesTable.createdAt))
     .limit(limit)
     .offset(offset);
@@ -39,15 +55,11 @@ router.post("/", requireAuth, async (req, res) => {
     return;
   }
 
-  const users = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId)).limit(1);
-  if (!users.length) {
-    res.status(404).json({ error: "User not found" });
-    return;
-  }
+  const user = await getOrCreateUser(clerkId);
 
   const inserted = await db
     .insert(activitiesTable)
-    .values({ ...parsed.data, userId: users[0].id })
+    .values({ ...parsed.data, userId: user.id })
     .returning();
 
   const activity = inserted[0];
