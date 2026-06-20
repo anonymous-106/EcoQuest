@@ -24,6 +24,7 @@ import type {
   ActivityInput,
   Challenge,
   ChallengeResult,
+  CompleteRecommendation200,
   DashboardSummary,
   FootprintCalculation,
   FootprintResult,
@@ -805,7 +806,7 @@ export const getGetRecommendationsUrl = () => {
 }
 
 /**
- * @summary Get personalized eco recommendations
+ * @summary Get personalized eco recommendations with completion status
  */
 export const getRecommendations = async ( options?: RequestInit): Promise<Recommendation[]> => {
 
@@ -852,7 +853,7 @@ export type GetRecommendationsQueryError = ErrorType<unknown>
 
 
 /**
- * @summary Get personalized eco recommendations
+ * @summary Get personalized eco recommendations with completion status
  */
 
 export function useGetRecommendations<TData = Awaited<ReturnType<typeof getRecommendations>>, TError = ErrorType<unknown>>(
@@ -872,6 +873,76 @@ export function useGetRecommendations<TData = Awaited<ReturnType<typeof getRecom
 
 
 
+
+export const getCompleteRecommendationUrl = (id: number,) => {
+
+
+
+
+  return `/api/recommendations/${id}/complete`
+}
+
+/**
+ * @summary Mark a recommendation as done (resets after 24h)
+ */
+export const completeRecommendation = async (id: number, options?: RequestInit): Promise<CompleteRecommendation200> => {
+
+  return customFetch<CompleteRecommendation200>(getCompleteRecommendationUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getCompleteRecommendationMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeRecommendation>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof completeRecommendation>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['completeRecommendation'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof completeRecommendation>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  completeRecommendation(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CompleteRecommendationMutationResult = NonNullable<Awaited<ReturnType<typeof completeRecommendation>>>
+
+    export type CompleteRecommendationMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Mark a recommendation as done (resets after 24h)
+ */
+export const useCompleteRecommendation = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeRecommendation>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof completeRecommendation>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getCompleteRecommendationMutationOptions(options));
+    }
 
 export const getGetLeaderboardUrl = (params?: GetLeaderboardParams,) => {
   const normalizedParams = new URLSearchParams();

@@ -1,6 +1,7 @@
-import { pgTable, text, serial, real } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, real, integer, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
+import { usersTable } from "./users";
 
 export const recommendationsTable = pgTable("recommendations", {
   id: serial("id").primaryKey(),
@@ -11,6 +12,14 @@ export const recommendationsTable = pgTable("recommendations", {
   difficulty: text("difficulty").notNull(),
   category: text("category").notNull(),
   icon: text("icon").notNull(),
+});
+
+export const recommendationCompletionsTable = pgTable("recommendation_completions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => usersTable.id),
+  recommendationId: integer("recommendation_id").notNull().references(() => recommendationsTable.id),
+  completedAt: timestamp("completed_at").notNull().defaultNow(),
+  resetsAt: timestamp("resets_at").notNull(),
 });
 
 export const insertRecommendationSchema = createInsertSchema(recommendationsTable).omit({ id: true });

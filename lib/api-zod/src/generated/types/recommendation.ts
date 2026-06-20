@@ -16,4 +16,5 @@ export interface Recommendation {
   difficulty: RecommendationDifficulty;
   category: string;
   icon: string;
+  completedUntil?: Date | null;
 }

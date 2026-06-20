@@ -195,7 +195,7 @@ paths:
     get:
       operationId: getRecommendations
       tags: [recommendations]
-      summary: Get personalized eco recommendations
+      summary: Get personalized eco recommendations with completion status
       responses:
         "200":
           description: Recommendations list
@@ -205,6 +205,28 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Recommendation"
+
+  /recommendations/{id}/complete:
+    post:
+      operationId: completeRecommendation
+      tags: [recommendations]
+      summary: Mark a recommendation as done (resets after 24h)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Marked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [recommendationId, completedUntil]
+                properties:
+                  recommendationId: { type: integer }
+                  completedUntil: { type: string, format: date-time }
 
   /leaderboard:
     get:
@@ -432,6 +454,7 @@ components:
         difficulty: { type: string, enum: [easy, medium, hard] }
         category: { type: string }
         icon: { type: string }
+        completedUntil: { type: string, format: date-time, nullable: true }
 
     LeaderboardEntry:
       type: object

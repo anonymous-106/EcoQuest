@@ -196,6 +196,7 @@ export interface Recommendation {
   difficulty: RecommendationDifficulty;
   category: string;
   icon: string;
+  completedUntil?: string | null;
 }
 
 export interface LeaderboardEntry {
@@ -222,6 +223,11 @@ export interface MyRank {
 export type GetActivitiesParams = {
 limit?: number;
 offset?: number;
+};
+
+export type CompleteRecommendation200 = {
+  recommendationId: number;
+  completedUntil: string;
 };
 
 export type GetLeaderboardParams = {

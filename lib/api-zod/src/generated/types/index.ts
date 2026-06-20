@@ -11,6 +11,7 @@ export * from './activityInput';
 export * from './challenge';
 export * from './challengeDifficulty';
 export * from './challengeResult';
+export * from './completeRecommendation200';
 export * from './dashboardSummary';
 export * from './dashboardSummaryCategoryBreakdownItem';
 export * from './dashboardSummaryMonthlyEmissionsItem';

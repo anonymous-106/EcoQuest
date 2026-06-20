@@ -261,7 +261,7 @@ export const CompleteChallengeResponse = zod.object({
 
 
 /**
- * @summary Get personalized eco recommendations
+ * @summary Get personalized eco recommendations with completion status
  */
 export const GetRecommendationsResponseItem = zod.object({
   "id": zod.number(),
@@ -271,9 +271,23 @@ export const GetRecommendationsResponseItem = zod.object({
   "moneySavingMonthly": zod.number(),
   "difficulty": zod.enum(['easy', 'medium', 'hard']),
   "category": zod.string(),
-  "icon": zod.string()
+  "icon": zod.string(),
+  "completedUntil": zod.coerce.date().nullish()
 })
 export const GetRecommendationsResponse = zod.array(GetRecommendationsResponseItem)
+
+
+/**
+ * @summary Mark a recommendation as done (resets after 24h)
+ */
+export const CompleteRecommendationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const CompleteRecommendationResponse = zod.object({
+  "recommendationId": zod.number(),
+  "completedUntil": zod.coerce.date()
+})
 
 
 /**
