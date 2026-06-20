@@ -1,0 +1,298 @@
+# Project Name
+
+EcoQuest – AI-Powered Carbon Footprint Tracker and Sustainability Companion
+
+# Objective
+
+Build a modern, responsive, production-ready full-stack web application that helps individuals understand, track, and reduce their carbon footprint through simple actions, personalized insights, and gamification.
+
+The application should educate users about their environmental impact, motivate sustainable behavior, and make carbon reduction engaging and rewarding.
+
+# Target Users
+
+* Students
+* Working professionals
+* Families
+* Environmentally conscious individuals
+* Anyone who wants to reduce their carbon footprint
+
+# Design Requirements
+
+* Modern, clean UI inspired by Apple and Google Material Design.
+* Green, white, and light blue color palette.
+* Mobile-first responsive design.
+* Dark mode support.
+* Smooth animations and transitions.
+* Accessible and easy to navigate.
+* Professional hackathon-quality appearance.
+
+# Tech Stack
+
+Frontend:
+
+* React
+* Tailwind CSS
+
+Backend:
+
+* Firebase
+
+Services:
+
+* Firebase Authentication
+* Firestore Database
+* Firebase Hosting
+
+Charts:
+
+* Chart.js or Recharts
+
+# Pages and Features
+
+## 1. Landing Page
+
+Sections:
+
+* Hero section with the slogan:
+  "Track your footprint. Change your future."
+* Short explanation of carbon footprints.
+* Features section.
+* Statistics section.
+* Call-to-action buttons:
+
+  * Get Started
+  * Calculate My Footprint
+* Testimonials section with placeholder data.
+* Footer with contact and social links.
+
+## 2. Authentication
+
+Features:
+
+* Sign Up
+* Login
+* Forgot Password
+* Google Sign-In
+* Persistent sessions.
+
+## 3. User Onboarding Questionnaire
+
+Collect:
+
+* Country
+* Age group
+* Transportation habits:
+
+  * Walking
+  * Bicycle
+  * Car
+  * Motorcycle
+  * Public transport
+* Daily travel distance.
+* Monthly electricity bill.
+* Household size.
+* Food preferences:
+
+  * Vegetarian
+  * Non-vegetarian
+  * Vegan
+* Online shopping frequency.
+* Air travel frequency.
+* Waste and recycling habits.
+
+Store all responses in the database.
+
+## 4. Carbon Footprint Calculator
+
+Calculate:
+
+* Transportation emissions.
+* Electricity emissions.
+* Food emissions.
+* Shopping emissions.
+* Lifestyle emissions.
+
+Display:
+
+* Daily emissions.
+* Monthly emissions.
+* Annual emissions.
+
+Provide visual indicators:
+
+* Low Impact
+* Moderate Impact
+* High Impact
+
+Show comparisons:
+
+* Equivalent trees needed.
+* Equivalent car kilometers.
+* Equivalent household energy usage.
+
+## 5. Dashboard
+
+Show:
+
+* Carbon score.
+* Progress charts.
+* Emissions breakdown.
+* Current eco streak.
+* Total green points.
+* Earned badges.
+* Daily challenges.
+* Personalized recommendations.
+
+Charts:
+
+* Weekly emissions.
+* Monthly emissions.
+* Category distribution.
+* Carbon reduction trend.
+
+## 6. AI-Powered Recommendations
+
+Generate personalized suggestions such as:
+
+* Use public transport twice a week.
+* Reduce meat consumption.
+* Switch to LED lighting.
+* Unplug devices when not in use.
+* Use reusable products.
+
+For every suggestion display:
+
+* Estimated carbon savings.
+* Estimated money savings.
+* Difficulty level.
+
+## 7. Daily Eco Challenges
+
+Examples:
+
+* Walk for one day.
+* Avoid plastic bottles.
+* Eat one vegetarian meal.
+* Turn off unnecessary lights.
+* Recycle household waste.
+
+Features:
+
+* Mark as completed.
+* Earn points.
+* Maintain streaks.
+
+## 8. Gamification System
+
+Green Points:
+
+* Completing challenges.
+* Lowering carbon score.
+* Daily logins.
+* Maintaining streaks.
+
+Badges:
+
+* Eco Beginner
+* Green Explorer
+* Tree Saver
+* Carbon Ninja
+* Sustainability Hero
+
+Display badge progress.
+
+## 9. Leaderboard
+
+Types:
+
+* Global leaderboard.
+* Friends leaderboard.
+* Weekly leaderboard.
+
+Ranking based on:
+
+* Green points.
+* Completed challenges.
+* Carbon reduction percentage.
+
+## 10. Profile Page
+
+Display:
+
+* Profile picture.
+* Personal statistics.
+* Achievements.
+* Emission history.
+* Settings.
+
+## 11. Notifications System
+
+Send reminders:
+
+* Complete daily challenges.
+* Update carbon data.
+* Maintain streaks.
+* Weekly progress reports.
+
+## 12. Sustainability Learning Hub
+
+Create an educational section containing:
+
+* What is a carbon footprint?
+* How climate change works.
+* Tips for reducing emissions.
+* Sustainable lifestyle articles.
+
+# Database Structure
+
+Users:
+
+* id
+* name
+* email
+* carbonScore
+* greenPoints
+* badges
+* streak
+* profileImage
+
+Activities:
+
+* userId
+* category
+* emissionValue
+* date
+
+Challenges:
+
+* title
+* description
+* points
+* completed
+
+Recommendations:
+
+* userId
+* recommendation
+* estimatedSavings
+
+# Additional Features
+
+* Loading animations.
+* Empty states.
+* Error handling.
+* Search functionality.
+* Responsive navigation.
+* Toast notifications.
+* PWA support for mobile installation.
+
+# Deployment Requirements
+
+* Fully deployable.
+* Production-ready.
+* Include sample data for demonstration.
+* Seed database with example users and leaderboard data.
+
+# Final Goal
+
+Create a polished, visually appealing, hackathon-ready web application that helps users understand, track, and reduce their carbon footprint while making sustainability engaging through gamification and personalized insights.
