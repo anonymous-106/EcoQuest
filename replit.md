@@ -8,6 +8,8 @@ EcoQuest is a full-stack gamified carbon footprint tracker that lets users log a
 - `pnpm --filter @workspace/ecoquest run dev` — run the React frontend (port 20365, proxied at `/`)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
+- `pnpm test` — run all unit tests (Vitest, 44 tests across api-server + ecoquest)
+- `pnpm run test:watch` — run tests in watch mode
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL` — Postgres connection string

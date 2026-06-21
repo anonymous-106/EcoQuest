@@ -3,6 +3,7 @@ import { db, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { requireAuth } from "../middlewares/requireAuth";
 import { UpsertProfileBody, SubmitOnboardingBody } from "@workspace/api-zod";
+import { calculateCarbonScore, getNewBadges } from "../lib/calculator";
 
 const router = Router();
 
@@ -63,25 +64,18 @@ router.post("/me/onboarding", requireAuth, async (req, res) => {
   }
 
   const data = parsed.data;
-
-  const transportEmissions: Record<string, number> = {
-    walking: 0,
-    bicycle: 0.02,
-    car: 0.21,
-    motorcycle: 0.11,
-    "public transport": 0.05,
-  };
-  const transportKgPerDay = (transportEmissions[data.transportation] ?? 0.1) * data.dailyTravelKm;
-  const electricityKgPerDay = (data.electricityBill * 0.12) / 30;
-  const foodEmissions: Record<string, number> = { vegan: 2.5, vegetarian: 3.8, "non-vegetarian": 7.2 };
-  const foodKgPerDay = (foodEmissions[data.foodPreference] ?? 5) / 365;
-  const shoppingEmissions: Record<string, number> = { never: 0.1, rarely: 0.3, monthly: 0.8, weekly: 2.1, daily: 4.5 };
-  const shoppingKgPerDay = (shoppingEmissions[data.shoppingFrequency] ?? 0.5) / 30;
-  const airTravelKgPerDay = (data.airTravelPerYear * 255) / 365;
-  const totalKgPerDay = transportKgPerDay + electricityKgPerDay + foodKgPerDay + shoppingKgPerDay + airTravelKgPerDay;
-  const annualTons = (totalKgPerDay * 365) / 1000;
+  const annualTons = calculateCarbonScore({
+    transportation: data.transportation,
+    dailyTravelKm: data.dailyTravelKm,
+    electricityBill: data.electricityBill,
+    foodPreference: data.foodPreference,
+    shoppingFrequency: data.shoppingFrequency,
+    airTravelPerYear: data.airTravelPerYear,
+  });
 
   const existing = await getOrCreateUser(clerkId);
+  const newPoints = existing.greenPoints + 50;
+  const newBadges = getNewBadges(existing.greenPoints, newPoints, existing.badges);
 
   const updated = await db
     .update(usersTable)
@@ -89,8 +83,8 @@ router.post("/me/onboarding", requireAuth, async (req, res) => {
       ...data,
       carbonScore: annualTons,
       onboardingComplete: true,
-      badges: existing.badges.includes("Eco Beginner") ? existing.badges : [...existing.badges, "Eco Beginner"],
-      greenPoints: existing.greenPoints + 50,
+      badges: [...existing.badges, ...newBadges, ...(!existing.badges.includes("Eco Beginner") ? ["Eco Beginner"] : [])],
+      greenPoints: newPoints,
       updatedAt: new Date(),
     })
     .where(eq(usersTable.clerkId, clerkId))
