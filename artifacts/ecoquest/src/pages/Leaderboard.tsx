@@ -7,6 +7,22 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Trophy, Medal, Star } from "lucide-react";
 
+interface LeaderboardUser {
+  userId: number;
+  name: string;
+  rank: number;
+  greenPoints: number;
+  streak: number;
+  carbonScore: number;
+  badges: string[];
+  profileImage?: string;
+}
+
+interface LeaderboardListProps {
+  data: LeaderboardUser[] | undefined;
+  loading: boolean;
+}
+
 export default function Leaderboard() {
   const [type, setType] = useState<"global" | "weekly">("global");
   const { data: leaderboard, isLoading: boardLoading } = useGetLeaderboard({ type, limit: 50 });
@@ -33,7 +49,6 @@ export default function Leaderboard() {
                 <span className="text-primary-foreground/80">of {myRank.totalUsers.toLocaleString()}</span>
               </div>
             </div>
-            
             <div className="flex gap-8">
               <div className="text-center">
                 <p className="text-primary-foreground/80 text-sm mb-1">Top</p>
@@ -59,33 +74,40 @@ export default function Leaderboard() {
             <TabsTrigger value="weekly">This Week</TabsTrigger>
           </TabsList>
         </div>
-
         <TabsContent value="global" className="space-y-4">
-          <LeaderboardList data={leaderboard} loading={boardLoading} />
+          <LeaderboardList data={leaderboard as LeaderboardUser[] | undefined} loading={boardLoading} />
         </TabsContent>
         <TabsContent value="weekly" className="space-y-4">
-          <LeaderboardList data={leaderboard} loading={boardLoading} />
+          <LeaderboardList data={leaderboard as LeaderboardUser[] | undefined} loading={boardLoading} />
         </TabsContent>
       </Tabs>
     </div>
   );
 }
 
-function LeaderboardList({ data, loading }: { data: any, loading: boolean }) {
+function LeaderboardList({ data, loading }: LeaderboardListProps) {
   if (loading) {
-    return <div className="space-y-4">{[1,2,3,4,5].map(i => <Skeleton key={i} className="h-20 w-full" />)}</div>;
+    return (
+      <div className="space-y-4">
+        {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-20 w-full" />)}
+      </div>
+    );
   }
 
   if (!data?.length) {
-    return <div className="text-center py-12 text-muted-foreground bg-muted/20 rounded-xl">No ranking data available yet.</div>;
+    return (
+      <div className="text-center py-12 text-muted-foreground bg-muted/20 rounded-xl">
+        No ranking data available yet.
+      </div>
+    );
   }
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
-      {data.map((user: any, idx: number) => (
-        <div 
-          key={user.userId} 
-          className={`flex items-center p-4 sm:p-6 transition-colors hover:bg-muted/50 ${idx !== data.length - 1 ? 'border-b' : ''}`}
+      {data.map((user, idx) => (
+        <div
+          key={user.userId}
+          className={`flex items-center p-4 sm:p-6 transition-colors hover:bg-muted/50 ${idx !== data.length - 1 ? "border-b" : ""}`}
         >
           <div className="w-12 text-center font-bold font-['Outfit'] text-xl sm:text-2xl flex-shrink-0 flex items-center justify-center">
             {user.rank === 1 ? <Medal className="h-8 w-8 text-yellow-500 fill-yellow-500" /> :
@@ -93,7 +115,6 @@ function LeaderboardList({ data, loading }: { data: any, loading: boolean }) {
              user.rank === 3 ? <Medal className="h-8 w-8 text-amber-600 fill-amber-600" /> :
              <span className="text-muted-foreground">#{user.rank}</span>}
           </div>
-          
           <div className="flex items-center flex-1 gap-4 ml-4 overflow-hidden">
             <Avatar className="h-12 w-12 border-2 border-background shadow-sm">
               <AvatarImage src={user.profileImage} />
@@ -111,9 +132,8 @@ function LeaderboardList({ data, loading }: { data: any, loading: boolean }) {
               </div>
             </div>
           </div>
-
           <div className="hidden md:flex gap-2 w-48 justify-end">
-            {user.badges?.slice(0, 2).map((badge: string) => (
+            {user.badges?.slice(0, 2).map((badge) => (
               <Badge key={badge} variant="outline" className="bg-primary/5 border-primary/20 text-xs py-0.5">
                 {badge}
               </Badge>

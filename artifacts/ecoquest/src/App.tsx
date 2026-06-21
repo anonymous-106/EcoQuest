@@ -6,6 +6,7 @@ import { Switch, Route, useLocation, Redirect, Router as WouterRouter } from 'wo
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import type { ComponentType } from "react";
 
 // Pages
 import Home from "@/pages/Home";
@@ -104,10 +105,7 @@ function ClerkQueryClientCacheInvalidator() {
   useEffect(() => {
     const unsubscribe = addListener(({ user }) => {
       const userId = user?.id ?? null;
-      if (
-        prevUserIdRef.current !== undefined &&
-        prevUserIdRef.current !== userId
-      ) {
+      if (prevUserIdRef.current !== undefined && prevUserIdRef.current !== userId) {
         queryClient.clear();
       }
       prevUserIdRef.current = userId;
@@ -131,7 +129,7 @@ function HomeRedirect() {
   );
 }
 
-function ProtectedRoute({ component: Component }: { component: any }) {
+function ProtectedRoute({ component: Component }: { component: ComponentType }) {
   return (
     <>
       <Show when="signed-in">

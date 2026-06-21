@@ -1,25 +1,17 @@
 import { Router } from "express";
-import { db, activitiesTable, usersTable } from "@workspace/db";
+import type { Request } from "express";
+import { db, activitiesTable } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
-import { requireAuth } from "../middlewares/requireAuth";
+import { requireAuth, type AuthRequest } from "../middlewares/requireAuth";
 import { LogActivityBody, GetActivitiesQueryParams } from "@workspace/api-zod";
 import { calculateFootprint } from "../lib/calculator";
+import { getOrCreateUser } from "../lib/user";
 
 const router = Router();
 
-async function getOrCreateUser(clerkId: string) {
-  const existing = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId)).limit(1);
-  if (existing.length > 0) return existing[0];
-  const inserted = await db
-    .insert(usersTable)
-    .values({ clerkId, name: "EcoQuest User", email: "", greenPoints: 0, streak: 0, badges: [], onboardingComplete: false, carbonScore: 0 })
-    .returning();
-  return inserted[0];
-}
-
 // GET /api/activities
-router.get("/", requireAuth, async (req, res) => {
-  const clerkId = (req as any).clerkId as string;
+router.get("/", requireAuth, async (req: Request, res) => {
+  const { clerkId } = req as AuthRequest;
   const parsed = GetActivitiesQueryParams.safeParse(req.query);
   const limit = parsed.success ? (parsed.data.limit ?? 20) : 20;
   const offset = parsed.success ? (parsed.data.offset ?? 0) : 0;
@@ -34,12 +26,12 @@ router.get("/", requireAuth, async (req, res) => {
     .limit(limit)
     .offset(offset);
 
-  res.json(activities.map(a => ({ ...a, createdAt: a.createdAt.toISOString() })));
+  res.json(activities.map((a) => ({ ...a, createdAt: a.createdAt.toISOString() })));
 });
 
 // POST /api/activities
-router.post("/", requireAuth, async (req, res) => {
-  const clerkId = (req as any).clerkId as string;
+router.post("/", requireAuth, async (req: Request, res) => {
+  const { clerkId } = req as AuthRequest;
   const parsed = LogActivityBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -58,8 +50,9 @@ router.post("/", requireAuth, async (req, res) => {
 });
 
 // POST /api/activities/calculator
-router.post("/calculator", async (req, res) => {
-  const { transportation, dailyTravelKm, electricityBill, foodPreference, shoppingFrequency, airTravelPerYear } = req.body;
+router.post("/calculator", async (req: Request, res) => {
+  const { transportation, dailyTravelKm, electricityBill, foodPreference, shoppingFrequency, airTravelPerYear } =
+    req.body as Record<string, unknown>;
 
   if (
     typeof transportation !== "string" ||
@@ -73,7 +66,15 @@ router.post("/calculator", async (req, res) => {
     return;
   }
 
-  const result = calculateFootprint({ transportation, dailyTravelKm, electricityBill, foodPreference, shoppingFrequency, airTravelPerYear });
+  const result = calculateFootprint({
+    transportation,
+    dailyTravelKm,
+    electricityBill,
+    foodPreference,
+    shoppingFrequency,
+    airTravelPerYear,
+  });
+
   res.json(result);
 });
 
